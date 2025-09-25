@@ -24,7 +24,7 @@
 
   <section>
     <h2>Lista de Presentes</h2>
-    <div id="loading-indicator" class="loading-indicator" style="display: none;">
+    <div id="loading-indicator" class="loading-indicator">
       <p>Carregando lista de presentes... ⏳</p>
     </div>
     <div id="lista" class="presentes"></div>
@@ -40,22 +40,6 @@
         Rua Gisele Martins, 317 <br>
         Jd. Morumbi
       </p>
-    </div>
-  </section>
-
-  <section>
-    <h2>Conexão com Google Sheets</h2>
-    <div class="event-details">
-      <p>
-        <strong>Para conectar com sua planilha:</strong><br>
-        1. Compartilhe sua planilha como "Qualquer pessoa com o link pode visualizar"<br>
-        2. Cole a URL completa da planilha abaixo (ex: https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit?usp=sharing)<br>
-      </p>
-      <div style="margin-top: 20px;">
-        <input type="text" id="sheets-url" placeholder="Cole aqui a URL completa do Google Sheets" style="width: 90%; margin-bottom: 10px;">
-        <button onclick="conectarGoogleSheets()" style="display: block; margin: 0 auto;">Conectar ao Google Sheets</button>
-        <p id="connection-status" style="margin-top: 10px; font-weight: bold;"></p>
-      </div>
     </div>
   </section>
 
