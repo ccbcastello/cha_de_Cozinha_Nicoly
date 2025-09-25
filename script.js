@@ -142,26 +142,38 @@ async function cancelarReservaItem(itemNome) {
 
 // ... (mantenha a função obterIcone e as funções UI iguais)
 function obterIcone(itemNome) {
-    // 1. Limpar e padronizar o nome do item para a busca (boa prática)
-    // Converte para minúsculas e remove espaços extras
+    // Padroniza o nome para a busca (boa prática)
     const nomePadronizado = itemNome ? String(itemNome).trim().toLowerCase() : '';
 
-    // 2. O Mapa de Ícones (use nomes padronizados em minúsculas)
-    const mapaIcones = {
-        'mesa': 'icone_mesa.svg',
-        'cadeira': 'icone_cadeira.svg',
-        'computador': 'icone_pc.svg',
-        // Adicione todos os seus mapeamentos aqui, em minúsculas
+    // Mapeamento de Itens para Classes do Font Awesome 6.x
+    const mapaClasses = {
+        'Refrigerante': 'fa-solid fa-wine-bottle'
+		'Salgadinhos':	'fa-solid fa-cookie-bite'
+		'Pratos descartáveis':	'fa-solid fa-plate-wheat'
+		'Guardanapos':	'fa-solid fa-square'
+		'Escorredor de arroz':	'fa-solid fa-filter'
+		'Escorredor de macarrão':	'fa-solid fa-filter'
+		'Tábua de madeira':	'fa-solid fa-clipboard'
+		'Tábua de plástico':	'fa-solid fa-clipboard'
+		'Tábua de vidro':	'fa-solid fa-clipboard'
+		'Escorredor de louça':	'fa-solid fa-sink'
+		'Kit pia':	'fa-solid fa-toolbox'
+		'Rodinho de pia':	'fa-solid fa-broom'
+		'Ralador':	'fa-solid fa-mortar-pestle'
+		'Descascador':	'fa-solid fa-knife'
+		'Batedor de ovos':	'fa-solid fa-egg'
+		'Concha': 'fa-solid fa-spoon'
+		'Escumadeira': 'fa-solid fa-sieve'
+		'Pegador de massas': 'fa-solid fa-utensils'
+		'Espátula':	'fa-solid fa-spatula'
     };
 
-    // 3. Fallback (Ícone Padrão)
-    const iconePadrao = 'icone_desconhecido.svg'; 
+    // Classe de Fallback (Ícone Padrão para itens desconhecidos)
+    const classePadrao = 'fa-solid fa-question-circle'; // Ponto de interrogação
 
-    // 4. Lógica Segura: Retorna o ícone mapeado OU o ícone padrão
-    const icone = mapaIcones[nomePadronizado];
-
-    // Se o ícone for encontrado, retorna. Senão, retorna o padrão.
-    return icone || iconePadrao;
+    // Retorna a classe mapeada ou a classe padrão
+    return mapaClasses[nomePadronizado] || classePadrao;
+	
 }
 
 // UI Functions
