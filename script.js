@@ -15,6 +15,12 @@ async function carregarDados() {
     try {
         const response = await fetch(WEB_APP_URL + '?action=get');
         const result = await response.json();
+		
+		// ADICIONE ESTES LOGS DE INSPEÇÃO:
+        console.log('Resposta bruta do Web App:', result); 
+        console.log('Status de Sucesso:', result.success); // SE ISSO FOR 'FALSE', ENCONTRAMOS O ERRO!
+        // FIM DOS LOGS
+
         
         if (result.success) {
             // Processar dados da planilha
