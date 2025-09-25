@@ -113,19 +113,13 @@ function carregarListaPadrao() {
 function reservarItem(itemNome, nomePessoa) {
     console.log('Reservando item:', itemNome, 'para:', nomePessoa);
     
-    // Criar um iframe oculto para enviar o formulário
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.name = 'reservationFrame';
-    document.body.appendChild(iframe);
-    
     // Criar um formulário para enviar os dados
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = WEB_APP_URL;
-    form.target = iframe.name;
+    form.target = '_blank'; // Abrir em nova aba
     
-    // Adicionar campos ocultos
+    // Adicionar campos
     const actionField = document.createElement('input');
     actionField.type = 'hidden';
     actionField.name = 'action';
@@ -152,15 +146,6 @@ function reservarItem(itemNome, nomePessoa) {
     
     // Adicionar o formulário à página e submetê-lo
     document.body.appendChild(form);
-    
-    // Log antes de enviar
-    console.log('Enviando formulário:', {
-        action: 'reserve',
-        itemName: itemNome,
-        reservedBy: nomePessoa,
-        timestamp: new Date().toISOString()
-    });
-    
     form.submit();
     
     // Remover o formulário após o envio
@@ -175,19 +160,13 @@ function reservarItem(itemNome, nomePessoa) {
 }
 
 function cancelarReservaItem(itemNome) {
-    // Criar um iframe oculto para enviar o formulário
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.name = 'cancelFrame';
-    document.body.appendChild(iframe);
-    
     // Criar um formulário para enviar os dados
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = WEB_APP_URL;
-    form.target = iframe.name;
+    form.target = '_blank'; // Abrir em nova aba
     
-    // Adicionar campos ocultos
+    // Adicionar campos
     const actionField = document.createElement('input');
     actionField.type = 'hidden';
     actionField.name = 'action';
