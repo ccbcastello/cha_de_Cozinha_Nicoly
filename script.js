@@ -3,7 +3,7 @@
 
 // Configuração fixa - URL do Google Apps Script Web App
 // SUBSTITUA PELA SUA URL DO WEB APP
-const WEB_APP_URL = 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby3Equ0MqOBYxYeBdAiUlEiQLT8HZwFQYdFKz0gkhPu6PnESth1CKkEgTSc6lxeBxBS/exec';
 
 let itens = [];
 let reservas = {};
