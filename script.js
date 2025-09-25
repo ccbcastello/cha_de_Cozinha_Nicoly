@@ -2,7 +2,6 @@
 // Main JavaScript file
 
 // Configuração fixa - URL do Google Apps Script Web App
-// SUBSTITUA PELA SUA URL DO WEB APP
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby3Equ0MqOBYxYeBdAiUlEiQLT8HZwFQYdFKz0gkhPu6PnESth1CKkEgTSc6lxeBxBS/exec';
 
 let itens = [];
@@ -10,66 +9,78 @@ let reservas = {};
 
 // Funções para Google Sheets via Apps Script
 async function carregarDados() {
-    mostrarLoading();
-    
-    try {
-        const response = await fetch(WEB_APP_URL + '?action=get');
-        const result = await response.json();
-		
-        console.log('Resposta bruta do Web App:', result); 
-        console.log('Status de Sucesso:', result.success);
+    mostrarLoading();
+    
+    try {
+        const response = await fetch(WEB_APP_URL + '?action=get');
+        const result = await response.json();
+        
+        console.log('Resposta bruta do Web App:', result); 
+        console.log('Status de Sucesso:', result.success);
 
-        if (result.success) {
-            itens = [];
-            reservas = {};
-            
-            result.data.forEach((row, index) => {
-                console.log(`Processando linha ${index + 1}:`, row);
+        if (result.success) {
+            itens = [];
+            reservas = {};
+            
+            result.data.forEach((row, index) => {
+                console.log(`Processando linha ${index + 1}:`, row);
                 
-                // --- LINHAS FALTANTES QUE DEVEM SER INSERIDAS NOVAMENTE ---
                 if (!Array.isArray(row) || row.length === 0) {
                     return; // Pula linhas nulas/vazias
                 }
-                const itemNome = row[0]; // Coluna A - Item (Declarado e inicializado!)
-                const reserva = row[1];  // Coluna B - Reserva (Declarado e inicializado!)
-                // ------------------------------------------------------------
+                const itemNome = row[0]; // Coluna A - Item
+                const reserva = row[1];  // Coluna B - Reserva
                 
-                if (itemNome && itemNome !== 'Item') {
-                    // ... (resto do seu código)
-                    // Aqui itemNome está corretamente definido
-                    try {
-                        itens.push({
-                            nome: itemNome,
-                            icone: obterIcone(itemNome)
-                        });
-                    } catch (e) {
-                        console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
-                    }
+                if (itemNome && itemNome !== 'Item') {
+                    try {
+                        itens.push({
+                            nome: itemNome,
+                            icone: obterIcone(itemNome)
+                        });
+                    } catch (e) {
+                        console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
+                    }
                     
-                    if (reserva && reserva !== 'Reserva') { // Usa a variável 'reserva'
-                        reservas[itemNome] = reserva;
-                    }
-                }
-            });
-            
-            atualizarLista();
-        } else {
-            throw new Error('Erro ao carregar dados da planilha');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        carregarListaPadrao();
-    } finally {
-        esconderLoading();
-    }
+                    if (reserva && reserva !== 'Reserva') {
+                        reservas[itemNome] = reserva;
+                    }
+                }
+            });
+            
+            atualizarLista();
+        } else {
+            throw new Error('Erro ao carregar dados da planilha');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        carregarListaPadrao();
+    } finally {
+        esconderLoading();
+    }
 }
 
 function carregarListaPadrao() {
     itens = [
-        { nome: "Escorredor de macarrão", icone: "🍝" },
-        { nome: "Escorredor de arroz", icone: "🍚" },
-        { nome: "Tábua de madeira", icone: "🪵" },
-        // ... (adicione todos os itens da sua lista original)
+        { nome: "Refrigerante", icone: "fa-solid fa-wine-bottle" },
+        { nome: "Salgadinhos", icone: "fa-solid fa-cookie-bite" },
+        { nome: "Pratos descartáveis", icone: "fa-solid fa-plate-wheat" },
+        { nome: "Guardanapos", icone: "fa-solid fa-square" },
+        { nome: "Doce caseiro", icone: "fa-solid fa-candy-cane" },
+        { nome: "Escorredor de arroz", icone: "fa-solid fa-filter" },
+        { nome: "Escorredor de macarrão", icone: "fa-solid fa-filter" },
+        { nome: "Tábua de madeira", icone: "fa-solid fa-clipboard" },
+        { nome: "Tábua de plástico", icone: "fa-solid fa-clipboard" },
+        { nome: "Tábua de vidro", icone: "fa-solid fa-clipboard" },
+        { nome: "Escorredor de louça", icone: "fa-solid fa-sink" },
+        { nome: "Kit pia (lixeira, porta detergente)", icone: "fa-solid fa-toolbox" },
+        { nome: "Rodinho de pia", icone: "fa-solid fa-broom" },
+        { nome: "Ralador", icone: "fa-solid fa-mortar-pestle" },
+        { nome: "Descascador", icone: "fa-solid fa-knife" },
+        { nome: "Batedor de ovos", icone: "fa-solid fa-egg" },
+        { nome: "Concha", icone: "fa-solid fa-spoon" },
+        { nome: "Escumadeira", icone: "fa-solid fa-sieve" },
+        { nome: "Pegador de massas", icone: "fa-solid fa-utensils" },
+        { nome: "Espátula", icone: "fa-solid fa-spatula" }
     ];
     reservas = {};
     atualizarLista();
@@ -140,40 +151,40 @@ async function cancelarReservaItem(itemNome) {
     }
 }
 
-// ... (mantenha a função obterIcone e as funções UI iguais)
 function obterIcone(itemNome) {
-    // Padroniza o nome para a busca (boa prática)
+    // Padroniza o nome para a busca
     const nomePadronizado = itemNome ? String(itemNome).trim().toLowerCase() : '';
 
     // Mapeamento de Itens para Classes do Font Awesome 6.x
+    // Chaves em minúsculas para corresponder à padronização
     const mapaClasses = {
-        'Refrigerante': 'fa-solid fa-wine-bottle'
-		'Salgadinhos':	'fa-solid fa-cookie-bite'
-		'Pratos descartáveis':	'fa-solid fa-plate-wheat'
-		'Guardanapos':	'fa-solid fa-square'
-		'Escorredor de arroz':	'fa-solid fa-filter'
-		'Escorredor de macarrão':	'fa-solid fa-filter'
-		'Tábua de madeira':	'fa-solid fa-clipboard'
-		'Tábua de plástico':	'fa-solid fa-clipboard'
-		'Tábua de vidro':	'fa-solid fa-clipboard'
-		'Escorredor de louça':	'fa-solid fa-sink'
-		'Kit pia':	'fa-solid fa-toolbox'
-		'Rodinho de pia':	'fa-solid fa-broom'
-		'Ralador':	'fa-solid fa-mortar-pestle'
-		'Descascador':	'fa-solid fa-knife'
-		'Batedor de ovos':	'fa-solid fa-egg'
-		'Concha': 'fa-solid fa-spoon'
-		'Escumadeira': 'fa-solid fa-sieve'
-		'Pegador de massas': 'fa-solid fa-utensils'
-		'Espátula':	'fa-solid fa-spatula'
+        'refrigerante': 'fa-solid fa-wine-bottle',
+        'salgadinhos': 'fa-solid fa-cookie-bite',
+        'pratos descartáveis': 'fa-solid fa-plate-wheat',
+        'guardanapos': 'fa-solid fa-square',
+        'doce caseiro': 'fa-solid fa-candy-cane',
+        'escorredor de arroz': 'fa-solid fa-filter',
+        'escorredor de macarrão': 'fa-solid fa-filter',
+        'tábua de madeira': 'fa-solid fa-clipboard',
+        'tábua de plástico': 'fa-solid fa-clipboard',
+        'tábua de vidro': 'fa-solid fa-clipboard',
+        'escorredor de louça': 'fa-solid fa-sink',
+        'kit pia': 'fa-solid fa-toolbox',
+        'rodinho de pia': 'fa-solid fa-broom',
+        'ralador': 'fa-solid fa-mortar-pestle',
+        'descascador': 'fa-solid fa-knife',
+        'batedor de ovos': 'fa-solid fa-egg',
+        'concha': 'fa-solid fa-spoon',
+        'escumadeira': 'fa-solid fa-sieve',
+        'pegador de massas': 'fa-solid fa-utensils',
+        'espátula': 'fa-solid fa-spatula'
     };
 
     // Classe de Fallback (Ícone Padrão para itens desconhecidos)
-    const classePadrao = 'fa-solid fa-question-circle'; // Ponto de interrogação
+    const classePadrao = 'fa-solid fa-question-circle';
 
     // Retorna a classe mapeada ou a classe padrão
     return mapaClasses[nomePadronizado] || classePadrao;
-	
 }
 
 // UI Functions
@@ -184,32 +195,49 @@ function mostrarLoading() {
 
 function esconderLoading() {
     document.getElementById('loading-indicator').style.display = 'none';
-    document.getElementById('lista').style.display = 'block';
+    document.getElementById('lista').style.display = 'grid'; // Usar grid em vez de block
 }
 
-// --- Exemplo de como a função atualizarLista deve ser adaptada ---
 function atualizarLista() {
-    const listaContainer = document.getElementById('lista-itens');
-    if (!listaContainer) return; // Garante que o container existe
+    const listaContainer = document.getElementById('lista'); // Corrigido para 'lista'
+    if (!listaContainer) return;
 
-    listaContainer.innerHTML = ''; // Limpa o container
+    listaContainer.innerHTML = '';
     
-    itens.forEach(item => {
-        // Cria a estrutura HTML para cada item
+    itens.forEach((item, index) => {
         const itemElemento = document.createElement('div');
-        itemElemento.classList.add('item-lista'); // Classe para estilização CSS
-
-        // Estrutura do ícone acima do nome
+        
+        // Verifica se o item está reservado
+        const isReservado = reservas[item.nome];
+        
+        if (isReservado) {
+            itemElemento.classList.add('item', 'reservado');
+        } else {
+            itemElemento.classList.add('item');
+        }
+        
+        // Adiciona atributo data-item para facilitar a identificação
+        itemElemento.setAttribute('data-item', item.nome);
+        
+        // Estrutura HTML conforme o CSS existente
         itemElemento.innerHTML = `
-            <div class="item-icone">
+            <div class="item-icon">
                 <i class="${item.icone}"></i>
             </div>
-            <div class="item-nome">
-                ${item.nome}
-            </div>
-            <div class="item-reserva">
-                ${reservas[item.nome] || ''} 
-            </div>
+            <h3>${item.nome}</h3>
+            ${isReservado ? `
+                <div class="reservado-info">
+                    Reservado por: ${reservas[item.nome]}
+                </div>
+                <button class="cancelar-btn" onclick="cancelarReserva('${item.nome}')">
+                    Cancelar Reserva
+                </button>
+            ` : `
+                <input type="text" id="nome-${index}" placeholder="Seu nome">
+                <button onclick="reservar('${item.nome}', ${index})">
+                    Reservar
+                </button>
+            `}
         `;
         
         listaContainer.appendChild(itemElemento);
@@ -239,7 +267,7 @@ async function reservar(itemNome, index) {
     const success = await reservarItem(itemNome, nome);
     
     if (success) {
-        reservas[item.nome] = nome;
+        reservas[itemNome] = nome;
         atualizarLista();
         alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
     } else {
