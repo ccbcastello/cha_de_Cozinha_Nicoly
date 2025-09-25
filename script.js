@@ -113,11 +113,17 @@ function carregarListaPadrao() {
 function reservarItem(itemNome, nomePessoa) {
     console.log('Reservando item:', itemNome, 'para:', nomePessoa);
     
+    // Criar um iframe oculto para enviar o formulário
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'reservationFrame';
+    document.body.appendChild(iframe);
+    
     // Criar um formulário para enviar os dados
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = WEB_APP_URL;
-    form.target = '_blank'; // Abrir em nova aba
+    form.target = iframe.name;
     
     // Adicionar campos
     const actionField = document.createElement('input');
@@ -153,18 +159,57 @@ function reservarItem(itemNome, nomePessoa) {
         document.body.removeChild(form);
     }, 1000);
     
-    // Recarregar a página após um pequeno delay
+    // Configurar listener para mensagens do iframe
+    const messageHandler = function(event) {
+        // Verificar se a mensagem é do tipo esperado
+        if (event.data && event.data.type === 'reservationComplete') {
+            // Remover o listener
+            window.removeEventListener('message', messageHandler);
+            
+            // Remover o iframe
+            setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+            }, 500);
+            
+            // Verificar se a operação foi bem-sucedida
+            if (event.data.success) {
+                // Recarregar a página para atualizar os dados
+                window.location.reload();
+            } else {
+                // Mostrar mensagem de erro
+                alert('Erro ao processar a reserva: ' + (event.data.error || 'Erro desconhecido'));
+            }
+        }
+    };
+    
+    // Adicionar o listener
+    window.addEventListener('message', messageHandler);
+    
+    // Timeout para o caso de não receber resposta
     setTimeout(() => {
+        window.removeEventListener('message', messageHandler);
+        if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+        }
+        // Recarregar a página mesmo sem confirmação
         window.location.reload();
-    }, 3000);
+    }, 5000);
 }
 
 function cancelarReservaItem(itemNome) {
+    // Criar um iframe oculto para enviar o formulário
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'cancelFrame';
+    document.body.appendChild(iframe);
+    
     // Criar um formulário para enviar os dados
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = WEB_APP_URL;
-    form.target = '_blank'; // Abrir em nova aba
+    form.target = iframe.name;
     
     // Adicionar campos
     const actionField = document.createElement('input');
@@ -194,10 +239,43 @@ function cancelarReservaItem(itemNome) {
         document.body.removeChild(form);
     }, 1000);
     
-    // Recarregar a página após um pequeno delay
+    // Configurar listener para mensagens do iframe
+    const messageHandler = function(event) {
+        // Verificar se a mensagem é do tipo esperado
+        if (event.data && event.data.type === 'reservationComplete') {
+            // Remover o listener
+            window.removeEventListener('message', messageHandler);
+            
+            // Remover o iframe
+            setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+            }, 500);
+            
+            // Verificar se a operação foi bem-sucedida
+            if (event.data.success) {
+                // Recarregar a página para atualizar os dados
+                window.location.reload();
+            } else {
+                // Mostrar mensagem de erro
+                alert('Erro ao processar o cancelamento: ' + (event.data.error || 'Erro desconhecido'));
+            }
+        }
+    };
+    
+    // Adicionar o listener
+    window.addEventListener('message', messageHandler);
+    
+    // Timeout para o caso de não receber resposta
     setTimeout(() => {
+        window.removeEventListener('message', messageHandler);
+        if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+        }
+        // Recarregar a página mesmo sem confirmação
         window.location.reload();
-    }, 3000);
+    }, 5000);
 }
 
 function obterIcone(itemNome) {
