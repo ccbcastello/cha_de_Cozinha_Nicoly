@@ -21,19 +21,24 @@ async function carregarDados() {
             itens = [];
             reservas = {};
             
-            result.data.forEach(row => {
-                const itemNome = row[0]; // Coluna A - Item
-                const reserva = row[1];  // Coluna B - Reserva
+            result.data.forEach((row, index) => { // Adicione 'index'
+                console.log(`Processando linha ${index + 1}:`, row); // Debug: Veja o dado bruto
                 
-                if (itemNome && itemNome !== 'Item') { // Pular cabeçalho
-                    itens.push({
-                        nome: itemNome,
-                        icone: obterIcone(itemNome)
-                    });
-                    
-                    if (reserva && reserva !== 'Reserva') { // Pular cabeçalho
-                        reservas[itemNome] = reserva;
+                // ... restante do seu código
+                
+                if (itemNome && itemNome !== 'Item') {
+                    // ...
+                    // Tente isolar a falha em obterIcone se houver suspeita
+                    try {
+                        itens.push({
+                            nome: itemNome,
+                            icone: obterIcone(itemNome) // <-- Se falhar aqui, o forEach para.
+                        });
+                    } catch (e) {
+                        console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
+                        // Você pode querer continuar o forEach, ou forçar um break se for crítico.
                     }
+                    // ...
                 }
             });
             
