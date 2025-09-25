@@ -187,34 +187,32 @@ function esconderLoading() {
     document.getElementById('lista').style.display = 'block';
 }
 
+// --- Exemplo de como a função atualizarLista deve ser adaptada ---
 function atualizarLista() {
-    const container = document.getElementById("lista");
-    container.innerHTML = "";
+    const listaContainer = document.getElementById('lista-itens');
+    if (!listaContainer) return; // Garante que o container existe
+
+    listaContainer.innerHTML = ''; // Limpa o container
     
-    itens.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "item" + (reservas[item.nome] ? " reservado" : "");
-        div.setAttribute('data-item', item.nome);
+    itens.forEach(item => {
+        // Cria a estrutura HTML para cada item
+        const itemElemento = document.createElement('div');
+        itemElemento.classList.add('item-lista'); // Classe para estilização CSS
+
+        // Estrutura do ícone acima do nome
+        itemElemento.innerHTML = `
+            <div class="item-icone">
+                <i class="${item.icone}"></i>
+            </div>
+            <div class="item-nome">
+                ${item.nome}
+            </div>
+            <div class="item-reserva">
+                ${reservas[item.nome] || ''} 
+            </div>
+        `;
         
-        if (reservas[item.nome]) {
-            // Item reservado
-            div.innerHTML = `
-                <div class="item-icon">${item.icone}</div>
-                <h3>${item.nome}</h3>
-                <div class="reservado-info">✓ Reservado por: ${reservas[item.nome]}</div>
-                <button class="cancelar-btn" onclick="cancelarReserva('${item.nome}')">Cancelar Reserva</button>
-            `;
-        } else {
-            // Item disponível
-            div.innerHTML = `
-                <div class="item-icon">${item.icone}</div>
-                <h3>${item.nome}</h3>
-                <input type="text" id="nome-${index}" placeholder="Digite seu nome">
-                <button onclick="reservar('${item.nome}', ${index})">Reservar</button>
-            `;
-        }
-        
-        container.appendChild(div);
+        listaContainer.appendChild(itemElemento);
     });
 }
 
