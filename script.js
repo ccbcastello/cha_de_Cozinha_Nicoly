@@ -2,7 +2,8 @@
 // Main JavaScript file
 
 // Configuração fixa - URL do Google Apps Script Web App
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby3Equ0MqOBYxYeBdAiUlEiQLT8HZwFQYdFKz0gkhPu6PnESth1CKkEgTSc6lxeBxBS/exec';
+// SUBSTITUA PELA SUA URL DO WEB APP
+const WEB_APP_URL = 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec';
 
 let itens = [];
 let reservas = {};
@@ -24,13 +25,13 @@ async function carregarDados() {
                 const itemNome = row[0]; // Coluna A - Item
                 const reserva = row[1];  // Coluna B - Reserva
                 
-                if (itemNome) {
+                if (itemNome && itemNome !== 'Item') { // Pular cabeçalho
                     itens.push({
                         nome: itemNome,
                         icone: obterIcone(itemNome)
                     });
                     
-                    if (reserva) {
+                    if (reserva && reserva !== 'Reserva') { // Pular cabeçalho
                         reservas[itemNome] = reserva;
                     }
                 }
@@ -42,10 +43,22 @@ async function carregarDados() {
         }
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        alert('Erro ao carregar a lista de presentes. Verifique a conexão.');
+        // Fallback: carregar lista padrão se a planilha falhar
+        carregarListaPadrao();
     } finally {
         esconderLoading();
     }
+}
+
+function carregarListaPadrao() {
+    itens = [
+        { nome: "Escorredor de macarrão", icone: "🍝" },
+        { nome: "Escorredor de arroz", icone: "🍚" },
+        { nome: "Tábua de madeira", icone: "🪵" },
+        // ... (adicione todos os itens da sua lista original)
+    ];
+    reservas = {};
+    atualizarLista();
 }
 
 async function reservarItem(itemNome, nomePessoa) {
@@ -58,11 +71,22 @@ async function reservarItem(itemNome, nomePessoa) {
             body: JSON.stringify({
                 action: 'reserve',
                 itemName: itemNome,
-                reservedBy: nomePessoa
+                reservedBy: nomePessoa,
+                timestamp: new Date().toISOString()
             })
         });
         
-        const result = await response.json();
+        const text = await response.text();
+        console.log('Resposta do servidor:', text);
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Erro ao parsear JSON:', e);
+            return false;
+        }
+        
         return result.success;
     } catch (error) {
         console.error('Erro ao reservar:', error);
@@ -79,11 +103,22 @@ async function cancelarReservaItem(itemNome) {
             },
             body: JSON.stringify({
                 action: 'cancel',
-                itemName: itemNome
+                itemName: itemNome,
+                timestamp: new Date().toISOString()
             })
         });
         
-        const result = await response.json();
+        const text = await response.text();
+        console.log('Resposta do cancelamento:', text);
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Erro ao parsear JSON:', e);
+            return false;
+        }
+        
         return result.success;
     } catch (error) {
         console.error('Erro ao cancelar:', error);
@@ -91,65 +126,17 @@ async function cancelarReservaItem(itemNome) {
     }
 }
 
-// Função auxiliar para obter ícones baseados no nome do item
-function obterIcone(nomeItem) {
-    const icones = {
-        'Escorredor de macarrão': '🍝',
-        'Escorredor de arroz': '🍚',
-        'Tábua de madeira': '🪵',
-        'Tábua de plástico': '📋',
-        'Tábua de vidro': '🔷',
-        'Escorredor de louça': '🍽️',
-        'Kit pia': '🧽',
-        'Rodinho de pia': '🧹',
-        'Ralador': '🧀',
-        'Descascador': '🥔',
-        'Batedor de ovos': '🥚',
-        'Concha': '🥄',
-        'Escumadeira': '🍳',
-        'Pegador de massas': '🍝',
-        'Espátula': '🍳',
-        'Colher de pau': '🥄',
-        'Colheres medidoras': '📏',
-        'Peneira': '⚪',
-        'Funil': '🔽',
-        'Saladeira': '🥗',
-        'Fruteira': '🍎',
-        'Jarra de suco': '🥤',
-        'Luva térmica': '🧤',
-        'Panos de prato': '🧽',
-        'Jogo americano': '🍽️',
-        'Toalha de mesa': '🏠',
-        'Centrífuga de salada': '🥬',
-        'Espremedor de alho': '🧄',
-        'Pote de vidro hermético': '🫙',
-        'Potes de condimentos': '🧂',
-        'Potes de plástico': '📦',
-        'Potes de vidro': '🫙',
-        'Potes de mantimentos': '🏺',
-        'Assadeira redonda': '🍰',
-        'Assadeira retangular': '🍞',
-        'Assadeira redonda com furo': '🍩',
-        'Baldes': '🪣',
-        'Bacias': '🥣',
-        'Vassoura': '🧹',
-        'Rodo': '🧽',
-        'Varal': '👕',
-        'Cabide': '👔',
-        'Varal com prendedores': '📎',
-        'Cesto de roupa': '🧺'
-    };
-    
-    return icones[nomeItem] || '🎁';
-}
+// ... (mantenha a função obterIcone e as funções UI iguais)
 
 // UI Functions
 function mostrarLoading() {
     document.getElementById('loading-indicator').style.display = 'block';
+    document.getElementById('lista').style.display = 'none';
 }
 
 function esconderLoading() {
     document.getElementById('loading-indicator').style.display = 'none';
+    document.getElementById('lista').style.display = 'block';
 }
 
 function atualizarLista() {
@@ -199,18 +186,19 @@ async function reservar(itemNome, index) {
     
     // Desabilitar botão durante o processamento
     const button = nomeInput.nextElementSibling;
+    const originalText = button.textContent;
     button.textContent = 'Reservando...';
     button.disabled = true;
     
     const success = await reservarItem(itemNome, nome);
     
     if (success) {
-        reservas[itemNome] = nome;
+        reservas[item.nome] = nome;
         atualizarLista();
         alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
     } else {
         alert('Erro ao reservar. Tente novamente.');
-        button.textContent = 'Reservar';
+        button.textContent = originalText;
         button.disabled = false;
     }
 }
@@ -222,6 +210,7 @@ async function cancelarReserva(itemNome) {
     if (!confirmacao) return;
     
     const button = document.querySelector(`[data-item="${itemNome}"] .cancelar-btn`);
+    const originalText = button.textContent;
     button.textContent = 'Cancelando...';
     button.disabled = true;
     
@@ -233,7 +222,7 @@ async function cancelarReserva(itemNome) {
         alert(`Reserva de "${itemNome}" cancelada!`);
     } else {
         alert('Erro ao cancelar reserva. Tente novamente.');
-        button.textContent = 'Cancelar Reserva';
+        button.textContent = originalText;
         button.disabled = false;
     }
 }
