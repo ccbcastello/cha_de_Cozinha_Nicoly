@@ -12,51 +12,75 @@ async function carregarDados() {
     mostrarLoading();
     
     try {
-        const response = await fetch(WEB_APP_URL + '?action=get');
-        const result = await response.json();
-        
-        console.log('Resposta bruta do Web App:', result); 
-        console.log('Status de Sucesso:', result.success);
-
-        if (result.success) {
-            itens = [];
-            reservas = {};
-            
-            result.data.forEach((row, index) => {
-                console.log(`Processando linha ${index + 1}:`, row);
-                
-                if (!Array.isArray(row) || row.length === 0) {
-                    return; // Pula linhas nulas/vazias
-                }
-                const itemNome = row[0]; // Coluna A - Item
-                const reserva = row[1];  // Coluna B - Reserva
-                
-                if (itemNome && itemNome !== 'Item') {
-                    try {
-                        itens.push({
-                            nome: itemNome,
-                            icone: obterIcone(itemNome)
-                        });
-                    } catch (e) {
-                        console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
-                    }
-                    
-                    if (reserva && reserva !== 'Reserva') {
-                        reservas[itemNome] = reserva;
-                    }
-                }
-            });
-            
-            atualizarLista();
-        } else {
-            throw new Error('Erro ao carregar dados da planilha');
-        }
+        // Usar JSONP para evitar CORS
+        await carregarDadosJSONP();
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
         carregarListaPadrao();
     } finally {
         esconderLoading();
     }
+}
+
+function carregarDadosJSONP() {
+    return new Promise((resolve, reject) => {
+        // Criar um elemento script para JSONP
+        const script = document.createElement('script');
+        const callbackName = 'jsonpCallback_' + Date.now();
+        
+        // Definir a função de callback
+        window[callbackName] = function(data) {
+            // Limpar
+            document.body.removeChild(script);
+            delete window[callbackName];
+            
+            if (data.success) {
+                itens = [];
+                reservas = {};
+                
+                data.data.forEach((row, index) => {
+                    console.log(`Processando linha ${index + 1}:`, row);
+                    
+                    if (!Array.isArray(row) || row.length === 0) {
+                        return; // Pula linhas nulas/vazias
+                    }
+                    const itemNome = row[0]; // Coluna A - Item
+                    const reserva = row[1];  // Coluna B - Reserva
+                    
+                    if (itemNome && itemNome !== 'Item') {
+                        try {
+                            itens.push({
+                                nome: itemNome,
+                                icone: obterIcone(itemNome)
+                            });
+                        } catch (e) {
+                            console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
+                        }
+                        
+                        if (reserva && reserva !== 'Reserva') {
+                            reservas[itemNome] = reserva;
+                        }
+                    }
+                });
+                
+                atualizarLista();
+                resolve();
+            } else {
+                reject(new Error(data.error || 'Erro ao carregar dados da planilha'));
+            }
+        };
+        
+        // Configurar erro
+        script.onerror = function() {
+            document.body.removeChild(script);
+            delete window[callbackName];
+            reject(new Error('Erro ao carregar dados da planilha'));
+        };
+        
+        // Adicionar o script à página
+        script.src = `${WEB_APP_URL}?action=get&callback=${callbackName}`;
+        document.body.appendChild(script);
+    });
 }
 
 function carregarListaPadrao() {
@@ -87,68 +111,81 @@ function carregarListaPadrao() {
 }
 
 async function reservarItem(itemNome, nomePessoa) {
-    try {
-        const response = await fetch(WEB_APP_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'reserve',
-                itemName: itemNome,
-                reservedBy: nomePessoa,
-                timestamp: new Date().toISOString()
-            })
-        });
+    return new Promise((resolve) => {
+        // Criar um formulário para enviar os dados
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = WEB_APP_URL;
         
-        const text = await response.text();
-        console.log('Resposta do servidor:', text);
+        // Adicionar campos ocultos
+        const actionField = document.createElement('input');
+        actionField.type = 'hidden';
+        actionField.name = 'action';
+        actionField.value = 'reserve';
+        form.appendChild(actionField);
         
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error('Erro ao parsear JSON:', e);
-            return false;
-        }
+        const itemNameField = document.createElement('input');
+        itemNameField.type = 'hidden';
+        itemNameField.name = 'itemName';
+        itemNameField.value = itemNome;
+        form.appendChild(itemNameField);
         
-        return result.success;
-    } catch (error) {
-        console.error('Erro ao reservar:', error);
-        return false;
-    }
+        const reservedByField = document.createElement('input');
+        reservedByField.type = 'hidden';
+        reservedByField.name = 'reservedBy';
+        reservedByField.value = nomePessoa;
+        form.appendChild(reservedByField);
+        
+        const timestampField = document.createElement('input');
+        timestampField.type = 'hidden';
+        timestampField.name = 'timestamp';
+        timestampField.value = new Date().toISOString();
+        form.appendChild(timestampField);
+        
+        // Adicionar o formulário à página e submetê-lo
+        document.body.appendChild(form);
+        form.submit();
+        
+        // O formulário será enviado e a página será recarregada
+        // Não precisamos resolver a Promise aqui
+        resolve(true);
+    });
 }
 
 async function cancelarReservaItem(itemNome) {
-    try {
-        const response = await fetch(WEB_APP_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'cancel',
-                itemName: itemNome,
-                timestamp: new Date().toISOString()
-            })
-        });
+    return new Promise((resolve) => {
+        // Criar um formulário para enviar os dados
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = WEB_APP_URL;
         
-        const text = await response.text();
-        console.log('Resposta do cancelamento:', text);
+        // Adicionar campos ocultos
+        const actionField = document.createElement('input');
+        actionField.type = 'hidden';
+        actionField.name = 'action';
+        actionField.value = 'cancel';
+        form.appendChild(actionField);
         
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error('Erro ao parsear JSON:', e);
-            return false;
-        }
+        const itemNameField = document.createElement('input');
+        itemNameField.type = 'hidden';
+        itemNameField.name = 'itemName';
+        itemNameField.value = itemNome;
+        form.appendChild(itemNameField);
         
-        return result.success;
-    } catch (error) {
-        console.error('Erro ao cancelar:', error);
-        return false;
-    }
+        const timestampField = document.createElement('input');
+        timestampField.type = 'hidden';
+        timestampField.name = 'timestamp';
+        timestampField.value = new Date().toISOString();
+        form.appendChild(timestampField);
+        
+        // Adicionar o formulário à página e submetê-lo
+        document.body.appendChild(form);
+        form.submit();
+        
+        // O formulário será enviado e a página será recarregada
+        // Não precisamos resolver a Promise aqui
+        resolve(true);
+    });
 }
 
 function obterIcone(itemNome) {
@@ -156,7 +193,6 @@ function obterIcone(itemNome) {
     const nomePadronizado = itemNome ? String(itemNome).trim().toLowerCase() : '';
 
     // Mapeamento de Itens para Classes do Font Awesome 6.x
-    // Chaves em minúsculas para corresponder à padronização
     const mapaClasses = {
         'refrigerante': 'fa-solid fa-wine-bottle',
         'salgadinhos': 'fa-solid fa-cookie-bite',
@@ -195,11 +231,11 @@ function mostrarLoading() {
 
 function esconderLoading() {
     document.getElementById('loading-indicator').style.display = 'none';
-    document.getElementById('lista').style.display = 'grid'; // Usar grid em vez de block
+    document.getElementById('lista').style.display = 'grid';
 }
 
 function atualizarLista() {
-    const listaContainer = document.getElementById('lista'); // Corrigido para 'lista'
+    const listaContainer = document.getElementById('lista');
     if (!listaContainer) return;
 
     listaContainer.innerHTML = '';
@@ -267,8 +303,7 @@ async function reservar(itemNome, index) {
     const success = await reservarItem(itemNome, nome);
     
     if (success) {
-        reservas[itemNome] = nome;
-        atualizarLista();
+        // A página será recarregada, então não precisamos atualizar a lista
         alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
     } else {
         alert('Erro ao reservar. Tente novamente.');
@@ -291,8 +326,7 @@ async function cancelarReserva(itemNome) {
     const success = await cancelarReservaItem(itemNome);
     
     if (success) {
-        delete reservas[itemNome];
-        atualizarLista();
+        // A página será recarregada, então não precisamos atualizar a lista
         alert(`Reserva de "${itemNome}" cancelada!`);
     } else {
         alert('Erro ao cancelar reserva. Tente novamente.');
