@@ -85,26 +85,50 @@ function carregarDadosJSONP() {
 
 function carregarListaPadrao() {
     itens = [
-        { nome: "Refrigerante", icone: "fa-solid fa-wine-bottle" },
-        { nome: "Salgadinhos", icone: "fa-solid fa-cookie-bite" },
-        { nome: "Pratos descartáveis", icone: "fa-solid fa-plate-wheat" },
-        { nome: "Guardanapos", icone: "fa-solid fa-square" },
-        { nome: "Doce caseiro", icone: "fa-solid fa-candy-cane" },
-        { nome: "Escorredor de arroz", icone: "fa-solid fa-filter" },
-        { nome: "Escorredor de macarrão", icone: "fa-solid fa-filter" },
-        { nome: "Tábua de madeira", icone: "fa-solid fa-clipboard" },
-        { nome: "Tábua de plástico", icone: "fa-solid fa-clipboard" },
-        { nome: "Tábua de vidro", icone: "fa-solid fa-clipboard" },
-        { nome: "Escorredor de louça", icone: "fa-solid fa-sink" },
-        { nome: "Kit pia (lixeira, porta detergente)", icone: "fa-solid fa-toolbox" },
-        { nome: "Rodinho de pia", icone: "fa-solid fa-broom" },
-        { nome: "Ralador", icone: "fa-solid fa-mortar-pestle" },
-        { nome: "Descascador", icone: "fa-solid fa-knife" },
-        { nome: "Batedor de ovos", icone: "fa-solid fa-egg" },
-        { nome: "Concha", icone: "fa-solid fa-spoon" },
-        { nome: "Escumadeira", icone: "fa-solid fa-sieve" },
-        { nome: "Pegador de massas", icone: "fa-solid fa-utensils" },
-        { nome: "Espátula", icone: "fa-solid fa-spatula" }
+        { nome: "Escorredor de macarrão", icone: "🍝" },
+        { nome: "Escorredor de arroz", icone: "🍚" },
+        { nome: "Tábua de madeira", icone: "🪵" },
+        { nome: "Tábua de plástico", icone: "📋" },
+        { nome: "Tábua de vidro", icone: "🔷" },
+        { nome: "Escorredor de louça", icone: "🍽️" },
+        { nome: "Kit pia (lixeira, porta detergente)", icone: "🧽" },
+        { nome: "Rodinho de pia", icone: "🧹" },
+        { nome: "Ralador", icone: "🧀" },
+        { nome: "Descascador", icone: "🥔" },
+        { nome: "Batedor de ovos", icone: "🥚" },
+        { nome: "Concha", icone: "🥄" },
+        { nome: "Escumadeira", icone: "🍳" },
+        { nome: "Pegador de massas", icone: "🍝" },
+        { nome: "Espátula", icone: "🍳" },
+        { nome: "Colher de pau", icone: "🥄" },
+        { nome: "Colheres medidoras", icone: "📏" },
+        { nome: "Peneira", icone: "⚪" },
+        { nome: "Funil", icone: "🔽" },
+        { nome: "Saladeira", icone: "🥗" },
+        { nome: "Fruteira", icone: "🍎" },
+        { nome: "Jarra de suco", icone: "🥤" },
+        { nome: "Luva térmica", icone: "🧤" },
+        { nome: "Panos de prato", icone: "🧽" },
+        { nome: "Jogo americano", icone: "🍽️" },
+        { nome: "Toalha de mesa", icone: "🏠" },
+        { nome: "Centrífuga de salada", icone: "🥬" },
+        { nome: "Espremedor de alho", icone: "🧄" },
+        { nome: "Pote de vidro hermético", icone: "🫙" },
+        { nome: "Potes de condimentos", icone: "🧂" },
+        { nome: "Potes de plástico", icone: "📦" },
+        { nome: "Potes de vidro", icone: "🫙" },
+        { nome: "Potes de mantimentos", icone: "🏺" },
+        { nome: "Assadeira redonda", icone: "🍰" },
+        { nome: "Assadeira retangular", icone: "🍞" },
+        { nome: "Assadeira redonda com furo", icone: "🍩" },
+        { nome: "Baldes", icone: "🪣" },
+        { nome: "Bacias", icone: "🥣" },
+        { nome: "Vassoura", icone: "🧹" },
+        { nome: "Rodo", icone: "🧽" },
+        { nome: "Varal", icone: "👕" },
+        { nome: "Cabide", icone: "👔" },
+        { nome: "Varal com prendedores", icone: "📎" },
+        { nome: "Cesto de roupa", icone: "🧺" }
     ];
     reservas = {};
     atualizarLista();
@@ -282,35 +306,60 @@ function obterIcone(itemNome) {
     // Padroniza o nome para a busca
     const nomePadronizado = itemNome ? String(itemNome).trim().toLowerCase() : '';
 
-    // Mapeamento de Itens para Classes do Font Awesome 6.x
-    const mapaClasses = {
-        'refrigerante': 'fa-solid fa-wine-bottle',
-        'salgadinhos': 'fa-solid fa-cookie-bite',
-        'pratos descartáveis': 'fa-solid fa-plate-wheat',
-        'guardanapos': 'fa-solid fa-square',
-        'doce caseiro': 'fa-solid fa-candy-cane',
-        'escorredor de arroz': 'fa-solid fa-filter',
-        'escorredor de macarrão': 'fa-solid fa-filter',
-        'tábua de madeira': 'fa-solid fa-clipboard',
-        'tábua de plástico': 'fa-solid fa-clipboard',
-        'tábua de vidro': 'fa-solid fa-clipboard',
-        'escorredor de louça': 'fa-solid fa-sink',
-        'kit pia': 'fa-solid fa-toolbox',
-        'rodinho de pia': 'fa-solid fa-broom',
-        'ralador': 'fa-solid fa-mortar-pestle',
-        'descascador': 'fa-solid fa-knife',
-        'batedor de ovos': 'fa-solid fa-egg',
-        'concha': 'fa-solid fa-spoon',
-        'escumadeira': 'fa-solid fa-sieve',
-        'pegador de massas': 'fa-solid fa-utensils',
-        'espátula': 'fa-solid fa-spatula'
+    // Mapeamento de Itens para Emojis
+    const mapaEmojis = {
+        'escorredor de macarrão': '🍝',
+        'escorredor de arroz': '🍚',
+        'tábua de madeira': '🪵',
+        'tábua de plástico': '📋',
+        'tábua de vidro': '🔷',
+        'escorredor de louça': '🍽️',
+        'kit pia (lixeira, porta detergente)': '🧽',
+        'kit pia': '🧽',
+        'rodinho de pia': '🧹',
+        'ralador': '🧀',
+        'descascador': '🥔',
+        'batedor de ovos': '🥚',
+        'concha': '🥄',
+        'escumadeira': '🍳',
+        'pegador de massas': '🍝',
+        'espátula': '🍳',
+        'colher de pau': '🥄',
+        'colheres medidoras': '📏',
+        'peneira': '⚪',
+        'funil': '🔽',
+        'saladeira': '🥗',
+        'fruteira': '🍎',
+        'jarra de suco': '🥤',
+        'luva térmica': '🧤',
+        'panos de prato': '🧽',
+        'jogo americano': '🍽️',
+        'toalha de mesa': '🏠',
+        'centrífuga de salada': '🥬',
+        'espremedor de alho': '🧄',
+        'pote de vidro hermético': '🫙',
+        'potes de condimentos': '🧂',
+        'potes de plástico': '📦',
+        'potes de vidro': '🫙',
+        'potes de mantimentos': '🏺',
+        'assadeira redonda': '🍰',
+        'assadeira retangular': '🍞',
+        'assadeira redonda com furo': '🍩',
+        'baldes': '🪣',
+        'bacias': '🥣',
+        'vassoura': '🧹',
+        'rodo': '🧽',
+        'varal': '👕',
+        'cabide': '👔',
+        'varal com prendedores': '📎',
+        'cesto de roupa': '🧺'
     };
 
-    // Classe de Fallback (Ícone Padrão para itens desconhecidos)
-    const classePadrao = 'fa-solid fa-question-circle';
+    // Emoji de Fallback (Ícone Padrão para itens desconhecidos)
+    const emojiPadrao = '🍴';
 
-    // Retorna a classe mapeada ou a classe padrão
-    return mapaClasses[nomePadronizado] || classePadrao;
+    // Retorna o emoji mapeado ou o emoji padrão
+    return mapaEmojis[nomePadronizado] || emojiPadrao;
 }
 
 // UI Functions
@@ -348,7 +397,7 @@ function atualizarLista() {
         // Estrutura HTML conforme o CSS existente
         itemElemento.innerHTML = `
             <div class="item-icon">
-                <i class="${item.icone}"></i>
+                <span style="font-size: 1.5rem;">${item.icone}</span>
             </div>
             <h3>${item.nome}</h3>
             ${isReservado ? `
