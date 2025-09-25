@@ -44,19 +44,16 @@
   </section>
 
   <section>
-    <h2>Como Conectar ao Google Sheets</h2>
+    <h2>Conexão com Google Sheets</h2>
     <div class="event-details">
       <p>
-        <strong>Para ativar a sincronização com Google Sheets:</strong><br>
-        1. Crie uma planilha no Google Sheets<br>
-        2. Vá em Extensões → Apps Script<br>
-        3. Cole o código fornecido no arquivo script.js<br>
-        4. Publique como Web App<br>
-        5. Cole a URL do Web App no campo abaixo<br>
+        <strong>Para conectar com sua planilha:</strong><br>
+        1. Compartilhe sua planilha como "Qualquer pessoa com o link pode visualizar"<br>
+        2. Cole a URL completa da planilha abaixo (ex: https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit?usp=sharing)<br>
       </p>
       <div style="margin-top: 20px;">
-        <input type="text" id="sheets-url" placeholder="Cole aqui a URL do Google Apps Script Web App" style="width: 90%; margin-bottom: 10px;">
-        <button onclick="conectarGoogleSheets()" style="display: block; margin: 0 auto;">Conectar Google Sheets</button>
+        <input type="text" id="sheets-url" placeholder="Cole aqui a URL completa do Google Sheets" style="width: 90%; margin-bottom: 10px;">
+        <button onclick="conectarGoogleSheets()" style="display: block; margin: 0 auto;">Conectar ao Google Sheets</button>
         <p id="connection-status" style="margin-top: 10px; font-weight: bold;"></p>
       </div>
     </div>
@@ -66,6 +63,6 @@
     Feito com ❤️ para um dia inesquecível!
   </footer>
 
-  <script type="module" src="./script.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>
