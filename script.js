@@ -1,178 +1,265 @@
-// Kitchen Shower Registry with Google Sheets Integration
+// Kitchen Shower Registry with Automatic Google Sheets Integration
 // Main JavaScript file
 
-const presentes = [
-  { nome: "Escorredor de macarrão", icone: "🍝" },
-  // ... (mantenha toda a lista de presentes original)
-];
+// Configuração fixa - URL do Google Apps Script Web App
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby3Equ0MqOBYxYeBdAiUlEiQLT8HZwFQYdFKz0gkhPu6PnESth1CKkEgTSc6lxeBxBS/exec';
 
-// Configuration
-let GOOGLE_SHEETS_URL = localStorage.getItem('googleSheetsUrl') || '';
-let reservas = Array(presentes.length).fill(null);
+let itens = [];
+let reservas = {};
 
-// Google Sheets Integration Functions
-async function conectarGoogleSheets() {
-  const url = document.getElementById('sheets-url').value.trim();
-  const statusElement = document.getElementById('connection-status');
-  
-  if (!url) {
-    statusElement.textContent = '❌ Por favor, insira a URL do Google Sheets';
-    statusElement.style.color = '#dc3545';
-    return;
-  }
-  
-  try {
-    statusElement.textContent = '⏳ Testando conexão...';
-    statusElement.style.color = '#ffc107';
+// Funções para Google Sheets via Apps Script
+async function carregarDados() {
+    mostrarLoading();
     
-    // Extract spreadsheet ID from URL
-    const spreadsheetId = extrairIdPlanilha(url);
-    if (!spreadsheetId) {
-      throw new Error('URL do Google Sheets inválida');
-    }
-    
-    // Test connection by trying to read data
-    const testUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json`;
-    const response = await fetch(testUrl);
-    if (!response.ok) throw new Error('Não foi possível acessar a planilha');
-    
-    GOOGLE_SHEETS_URL = spreadsheetId;
-    localStorage.setItem('googleSheetsUrl', spreadsheetId);
-    
-    statusElement.textContent = '✅ Conectado ao Google Sheets com sucesso!';
-    statusElement.style.color = '#28a745';
-    
-    // Load data from Google Sheets
-    await carregarReservasDoGoogleSheets();
-    atualizarLista();
-  } catch (error) {
-    console.error('Erro ao conectar:', error);
-    statusElement.textContent = '❌ Erro na conexão. Verifique se a planilha está compartilhada publicamente.';
-    statusElement.style.color = '#dc3545';
-  }
-}
-
-function extrairIdPlanilha(url) {
-  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return match ? match[1] : null;
-}
-
-async function carregarReservasDoGoogleSheets() {
-  if (!GOOGLE_SHEETS_URL) {
-    return carregarReservasLocal();
-  }
-  
-  try {
-    const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_URL}/gviz/tq?tqx=out:json`;
-    const response = await fetch(url);
-    const text = await response.text();
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    
-    // Reset reservations
-    reservas = Array(presentes.length).fill(null);
-    
-    // Process data from Google Sheets
-    if (json.table.rows) {
-      json.table.rows.forEach(row => {
-        if (row.c && row.c.length >= 2) {
-          const itemName = row.c[0]?.v; // Coluna A - Item
-          const reservedBy = row.c[1]?.v; // Coluna B - Reserva
-          
-          if (itemName && reservedBy) {
-            // Find matching item in our list
-            const index = presentes.findIndex(p => p.nome === itemName);
-            if (index !== -1) {
-              reservas[index] = reservedBy;
-            }
-          }
+    try {
+        const response = await fetch(WEB_APP_URL + '?action=get');
+        const result = await response.json();
+        
+        if (result.success) {
+            // Processar dados da planilha
+            itens = [];
+            reservas = {};
+            
+            result.data.forEach(row => {
+                const itemNome = row[0]; // Coluna A - Item
+                const reserva = row[1];  // Coluna B - Reserva
+                
+                if (itemNome) {
+                    itens.push({
+                        nome: itemNome,
+                        icone: obterIcone(itemNome)
+                    });
+                    
+                    if (reserva) {
+                        reservas[itemNome] = reserva;
+                    }
+                }
+            });
+            
+            atualizarLista();
+        } else {
+            throw new Error('Erro ao carregar dados da planilha');
         }
-      });
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        alert('Erro ao carregar a lista de presentes. Verifique a conexão.');
+    } finally {
+        esconderLoading();
     }
-  } catch (error) {
-    console.error('Erro ao carregar do Google Sheets:', error);
-    carregarReservasLocal();
-  }
 }
 
-async function salvarReservaNoGoogleSheets(index, nome, action = 'reserve') {
-  if (!GOOGLE_SHEETS_URL) {
-    return salvarReservasLocal();
-  }
-  
-  try {
-    const itemName = presentes[index].nome;
-    const reservedBy = action === 'reserve' ? nome : '';
+async function reservarItem(itemNome, nomePessoa) {
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'reserve',
+                itemName: itemNome,
+                reservedBy: nomePessoa
+            })
+        });
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Erro ao reservar:', error);
+        return false;
+    }
+}
+
+async function cancelarReservaItem(itemNome) {
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'cancel',
+                itemName: itemNome
+            })
+        });
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Erro ao cancelar:', error);
+        return false;
+    }
+}
+
+// Função auxiliar para obter ícones baseados no nome do item
+function obterIcone(nomeItem) {
+    const icones = {
+        'Escorredor de macarrão': '🍝',
+        'Escorredor de arroz': '🍚',
+        'Tábua de madeira': '🪵',
+        'Tábua de plástico': '📋',
+        'Tábua de vidro': '🔷',
+        'Escorredor de louça': '🍽️',
+        'Kit pia': '🧽',
+        'Rodinho de pia': '🧹',
+        'Ralador': '🧀',
+        'Descascador': '🥔',
+        'Batedor de ovos': '🥚',
+        'Concha': '🥄',
+        'Escumadeira': '🍳',
+        'Pegador de massas': '🍝',
+        'Espátula': '🍳',
+        'Colher de pau': '🥄',
+        'Colheres medidoras': '📏',
+        'Peneira': '⚪',
+        'Funil': '🔽',
+        'Saladeira': '🥗',
+        'Fruteira': '🍎',
+        'Jarra de suco': '🥤',
+        'Luva térmica': '🧤',
+        'Panos de prato': '🧽',
+        'Jogo americano': '🍽️',
+        'Toalha de mesa': '🏠',
+        'Centrífuga de salada': '🥬',
+        'Espremedor de alho': '🧄',
+        'Pote de vidro hermético': '🫙',
+        'Potes de condimentos': '🧂',
+        'Potes de plástico': '📦',
+        'Potes de vidro': '🫙',
+        'Potes de mantimentos': '🏺',
+        'Assadeira redonda': '🍰',
+        'Assadeira retangular': '🍞',
+        'Assadeira redonda com furo': '🍩',
+        'Baldes': '🪣',
+        'Bacias': '🥣',
+        'Vassoura': '🧹',
+        'Rodo': '🧽',
+        'Varal': '👕',
+        'Cabide': '👔',
+        'Varal com prendedores': '📎',
+        'Cesto de roupa': '🧺'
+    };
     
-    // For Google Sheets API, we'd need a server-side component
-    // This is a simplified version that just updates local storage
-    // In a real implementation, you'd need Google Apps Script
-    console.log(`Would update Google Sheets: ${itemName} -> ${reservedBy}`);
-    
-    // For now, fall back to localStorage
-    salvarReservasLocal();
-    return true;
-  } catch (error) {
-    console.error('Erro ao salvar no Google Sheets:', error);
-    salvarReservasLocal();
-    return false;
-  }
+    return icones[nomeItem] || '🎁';
 }
 
-// Restante do código permanece igual (funções de UI, localStorage, etc.)
-// ... (mantenha todas as outras funções como estão)
-
-// Local Storage Functions (Fallback)
-function carregarReservasLocal() {
-  const reservasSalvas = localStorage.getItem('reservasChaCozinha');
-  if (reservasSalvas) {
-    reservas = JSON.parse(reservasSalvas);
-  } else {
-    reservas = Array(presentes.length).fill(null);
-  }
-}
-
-function salvarReservasLocal() {
-  localStorage.setItem('reservasChaCozinha', JSON.stringify(reservas));
-}
-
-// UI Functions (mantenha todas como estão)
+// UI Functions
 function mostrarLoading() {
-  document.getElementById('loading-indicator').style.display = 'block';
+    document.getElementById('loading-indicator').style.display = 'block';
 }
 
 function esconderLoading() {
-  document.getElementById('loading-indicator').style.display = 'none';
+    document.getElementById('loading-indicator').style.display = 'none';
 }
 
-// ... (mantenha todas as outras funções UI)
-
-// Initialize the application
-async function inicializar() {
-  mostrarLoading();
-  
-  // Check if Google Sheets URL is already saved
-  if (GOOGLE_SHEETS_URL) {
-    document.getElementById('sheets-url').value = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_URL}/edit`;
-    document.getElementById('connection-status').textContent = '✅ URL salva. Conectando...';
-    document.getElementById('connection-status').style.color = '#28a745';
+function atualizarLista() {
+    const container = document.getElementById("lista");
+    container.innerHTML = "";
     
-    try {
-      await carregarReservasDoGoogleSheets();
-    } catch (error) {
-      console.log('Fallback to localStorage');
-      carregarReservasLocal();
-    }
-  } else {
-    carregarReservasLocal();
-  }
-  
-  atualizarLista();
-  esconderLoading();
+    itens.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "item" + (reservas[item.nome] ? " reservado" : "");
+        div.setAttribute('data-item', item.nome);
+        
+        if (reservas[item.nome]) {
+            // Item reservado
+            div.innerHTML = `
+                <div class="item-icon">${item.icone}</div>
+                <h3>${item.nome}</h3>
+                <div class="reservado-info">✓ Reservado por: ${reservas[item.nome]}</div>
+                <button class="cancelar-btn" onclick="cancelarReserva('${item.nome}')">Cancelar Reserva</button>
+            `;
+        } else {
+            // Item disponível
+            div.innerHTML = `
+                <div class="item-icon">${item.icone}</div>
+                <h3>${item.nome}</h3>
+                <input type="text" id="nome-${index}" placeholder="Digite seu nome">
+                <button onclick="reservar('${item.nome}', ${index})">Reservar</button>
+            `;
+        }
+        
+        container.appendChild(div);
+    });
 }
 
-// Make functions globally accessible
+async function reservar(itemNome, index) {
+    const nomeInput = document.getElementById(`nome-${index}`);
+    const nome = nomeInput.value.trim();
+    
+    if (!nome) {
+        alert("Digite seu nome para reservar.");
+        return;
+    }
+    
+    if (nome.length < 2) {
+        alert("Digite um nome válido (pelo menos 2 caracteres).");
+        return;
+    }
+    
+    // Desabilitar botão durante o processamento
+    const button = nomeInput.nextElementSibling;
+    button.textContent = 'Reservando...';
+    button.disabled = true;
+    
+    const success = await reservarItem(itemNome, nome);
+    
+    if (success) {
+        reservas[itemNome] = nome;
+        atualizarLista();
+        alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
+    } else {
+        alert('Erro ao reservar. Tente novamente.');
+        button.textContent = 'Reservar';
+        button.disabled = false;
+    }
+}
+
+async function cancelarReserva(itemNome) {
+    const nomeReservado = reservas[itemNome];
+    const confirmacao = confirm(`Cancelar reserva de "${itemNome}" por ${nomeReservado}?`);
+    
+    if (!confirmacao) return;
+    
+    const button = document.querySelector(`[data-item="${itemNome}"] .cancelar-btn`);
+    button.textContent = 'Cancelando...';
+    button.disabled = true;
+    
+    const success = await cancelarReservaItem(itemNome);
+    
+    if (success) {
+        delete reservas[itemNome];
+        atualizarLista();
+        alert(`Reserva de "${itemNome}" cancelada!`);
+    } else {
+        alert('Erro ao cancelar reserva. Tente novamente.');
+        button.textContent = 'Cancelar Reserva';
+        button.disabled = false;
+    }
+}
+
+// Inicialização
+async function inicializar() {
+    await carregarDados();
+}
+
+// Tornar funções globais
 window.reservar = reservar;
 window.cancelarReserva = cancelarReserva;
-window.conectarGoogleSheets = conectarGoogleSheets;
 
+// Iniciar quando a página carregar
 document.addEventListener('DOMContentLoaded', inicializar);
+
+// Suporte a Enter nos campos de texto
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && e.target.type === 'text') {
+        const id = e.target.id;
+        if (id.startsWith('nome-')) {
+            const index = parseInt(id.split('-')[1]);
+            const itemNome = itens[index]?.nome;
+            if (itemNome) {
+                reservar(itemNome, index);
+            }
+        }
+    }
+});
