@@ -141,6 +141,28 @@ async function cancelarReservaItem(itemNome) {
 }
 
 // ... (mantenha a função obterIcone e as funções UI iguais)
+function obterIcone(itemNome) {
+    // 1. Limpar e padronizar o nome do item para a busca (boa prática)
+    // Converte para minúsculas e remove espaços extras
+    const nomePadronizado = itemNome ? String(itemNome).trim().toLowerCase() : '';
+
+    // 2. O Mapa de Ícones (use nomes padronizados em minúsculas)
+    const mapaIcones = {
+        'mesa': 'icone_mesa.svg',
+        'cadeira': 'icone_cadeira.svg',
+        'computador': 'icone_pc.svg',
+        // Adicione todos os seus mapeamentos aqui, em minúsculas
+    };
+
+    // 3. Fallback (Ícone Padrão)
+    const iconePadrao = 'icone_desconhecido.svg'; 
+
+    // 4. Lógica Segura: Retorna o ícone mapeado OU o ícone padrão
+    const icone = mapaIcones[nomePadronizado];
+
+    // Se o ícone for encontrado, retorna. Senão, retorna o padrão.
+    return icone || iconePadrao;
+}
 
 // UI Functions
 function mostrarLoading() {
