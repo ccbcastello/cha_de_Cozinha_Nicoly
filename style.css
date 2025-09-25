@@ -253,3 +253,32 @@ footer {
   .presentes { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
   section { margin: 20px 10px; padding: 20px; }
 }
+
+/* CSS Simples para a estrutura */
+#lista-itens {
+    display: flex;
+    flex-wrap: wrap; /* Permite que os itens quebrem linha */
+    gap: 20px;
+    padding: 20px;
+}
+
+.item-lista {
+    display: flex;
+    flex-direction: column; /* Coloca os elementos em coluna (ícone, nome, reserva) */
+    align-items: center; /* Centraliza o conteúdo horizontalmente */
+    text-align: center;
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 120px; /* Largura fixa para cada item */
+}
+
+.item-icone i {
+    font-size: 2.5em; /* Tamanho do ícone */
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.item-nome {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
