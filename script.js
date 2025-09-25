@@ -111,6 +111,8 @@ function carregarListaPadrao() {
 }
 
 function reservarItem(itemNome, nomePessoa) {
+    console.log('Reservando item:', itemNome, 'para:', nomePessoa);
+    
     // Criar um iframe oculto para enviar o formulário
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
@@ -150,6 +152,15 @@ function reservarItem(itemNome, nomePessoa) {
     
     // Adicionar o formulário à página e submetê-lo
     document.body.appendChild(form);
+    
+    // Log antes de enviar
+    console.log('Enviando formulário:', {
+        action: 'reserve',
+        itemName: itemNome,
+        reservedBy: nomePessoa,
+        timestamp: new Date().toISOString()
+    });
+    
     form.submit();
     
     // Remover o formulário após o envio
