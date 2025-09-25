@@ -110,82 +110,92 @@ function carregarListaPadrao() {
     atualizarLista();
 }
 
-async function reservarItem(itemNome, nomePessoa) {
-    return new Promise((resolve) => {
-        // Criar um formulário para enviar os dados
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = WEB_APP_URL;
-        
-        // Adicionar campos ocultos
-        const actionField = document.createElement('input');
-        actionField.type = 'hidden';
-        actionField.name = 'action';
-        actionField.value = 'reserve';
-        form.appendChild(actionField);
-        
-        const itemNameField = document.createElement('input');
-        itemNameField.type = 'hidden';
-        itemNameField.name = 'itemName';
-        itemNameField.value = itemNome;
-        form.appendChild(itemNameField);
-        
-        const reservedByField = document.createElement('input');
-        reservedByField.type = 'hidden';
-        reservedByField.name = 'reservedBy';
-        reservedByField.value = nomePessoa;
-        form.appendChild(reservedByField);
-        
-        const timestampField = document.createElement('input');
-        timestampField.type = 'hidden';
-        timestampField.name = 'timestamp';
-        timestampField.value = new Date().toISOString();
-        form.appendChild(timestampField);
-        
-        // Adicionar o formulário à página e submetê-lo
-        document.body.appendChild(form);
-        form.submit();
-        
-        // O formulário será enviado e a página será recarregada
-        // Não precisamos resolver a Promise aqui
-        resolve(true);
-    });
+function reservarItem(itemNome, nomePessoa) {
+    // Criar um formulário para enviar os dados
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = WEB_APP_URL;
+    form.target = '_blank'; // Abrir em nova aba para evitar recarregar a página
+    
+    // Adicionar campos ocultos
+    const actionField = document.createElement('input');
+    actionField.type = 'hidden';
+    actionField.name = 'action';
+    actionField.value = 'reserve';
+    form.appendChild(actionField);
+    
+    const itemNameField = document.createElement('input');
+    itemNameField.type = 'hidden';
+    itemNameField.name = 'itemName';
+    itemNameField.value = itemNome;
+    form.appendChild(itemNameField);
+    
+    const reservedByField = document.createElement('input');
+    reservedByField.type = 'hidden';
+    reservedByField.name = 'reservedBy';
+    reservedByField.value = nomePessoa;
+    form.appendChild(reservedByField);
+    
+    const timestampField = document.createElement('input');
+    timestampField.type = 'hidden';
+    timestampField.name = 'timestamp';
+    timestampField.value = new Date().toISOString();
+    form.appendChild(timestampField);
+    
+    // Adicionar o formulário à página e submetê-lo
+    document.body.appendChild(form);
+    form.submit();
+    
+    // Remover o formulário após o envio
+    setTimeout(() => {
+        document.body.removeChild(form);
+    }, 1000);
+    
+    // Recarregar a página após um pequeno delay
+    setTimeout(() => {
+        window.location.reload();
+    }, 2000);
 }
 
-async function cancelarReservaItem(itemNome) {
-    return new Promise((resolve) => {
-        // Criar um formulário para enviar os dados
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = WEB_APP_URL;
-        
-        // Adicionar campos ocultos
-        const actionField = document.createElement('input');
-        actionField.type = 'hidden';
-        actionField.name = 'action';
-        actionField.value = 'cancel';
-        form.appendChild(actionField);
-        
-        const itemNameField = document.createElement('input');
-        itemNameField.type = 'hidden';
-        itemNameField.name = 'itemName';
-        itemNameField.value = itemNome;
-        form.appendChild(itemNameField);
-        
-        const timestampField = document.createElement('input');
-        timestampField.type = 'hidden';
-        timestampField.name = 'timestamp';
-        timestampField.value = new Date().toISOString();
-        form.appendChild(timestampField);
-        
-        // Adicionar o formulário à página e submetê-lo
-        document.body.appendChild(form);
-        form.submit();
-        
-        // O formulário será enviado e a página será recarregada
-        // Não precisamos resolver a Promise aqui
-        resolve(true);
-    });
+function cancelarReservaItem(itemNome) {
+    // Criar um formulário para enviar os dados
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = WEB_APP_URL;
+    form.target = '_blank'; // Abrir em nova aba para evitar recarregar a página
+    
+    // Adicionar campos ocultos
+    const actionField = document.createElement('input');
+    actionField.type = 'hidden';
+    actionField.name = 'action';
+    actionField.value = 'cancel';
+    form.appendChild(actionField);
+    
+    const itemNameField = document.createElement('input');
+    itemNameField.type = 'hidden';
+    itemNameField.name = 'itemName';
+    itemNameField.value = itemNome;
+    form.appendChild(itemNameField);
+    
+    const timestampField = document.createElement('input');
+    timestampField.type = 'hidden';
+    timestampField.name = 'timestamp';
+    timestampField.value = new Date().toISOString();
+    form.appendChild(timestampField);
+    
+    // Adicionar o formulário à página e submetê-lo
+    document.body.appendChild(form);
+    form.submit();
+    
+    // Remover o formulário após o envio
+    setTimeout(() => {
+        document.body.removeChild(form);
+    }, 1000);
+    
+    // Recarregar a página após um pequeno delay
+    setTimeout(() => {
+        window.location.reload();
+    }, 2000);
 }
 
 function obterIcone(itemNome) {
@@ -280,7 +290,7 @@ function atualizarLista() {
     });
 }
 
-async function reservar(itemNome, index) {
+function reservar(itemNome, index) {
     const nomeInput = document.getElementById(`nome-${index}`);
     const nome = nomeInput.value.trim();
     
@@ -300,19 +310,14 @@ async function reservar(itemNome, index) {
     button.textContent = 'Reservando...';
     button.disabled = true;
     
-    const success = await reservarItem(itemNome, nome);
+    // Fazer a reserva
+    reservarItem(itemNome, nome);
     
-    if (success) {
-        // A página será recarregada, então não precisamos atualizar a lista
-        alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
-    } else {
-        alert('Erro ao reservar. Tente novamente.');
-        button.textContent = originalText;
-        button.disabled = false;
-    }
+    // Mostrar mensagem de sucesso
+    alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
 }
 
-async function cancelarReserva(itemNome) {
+function cancelarReserva(itemNome) {
     const nomeReservado = reservas[itemNome];
     const confirmacao = confirm(`Cancelar reserva de "${itemNome}" por ${nomeReservado}?`);
     
@@ -323,16 +328,11 @@ async function cancelarReserva(itemNome) {
     button.textContent = 'Cancelando...';
     button.disabled = true;
     
-    const success = await cancelarReservaItem(itemNome);
+    // Cancelar a reserva
+    cancelarReservaItem(itemNome);
     
-    if (success) {
-        // A página será recarregada, então não precisamos atualizar a lista
-        alert(`Reserva de "${itemNome}" cancelada!`);
-    } else {
-        alert('Erro ao cancelar reserva. Tente novamente.');
-        button.textContent = originalText;
-        button.disabled = false;
-    }
+    // Mostrar mensagem de sucesso
+    alert(`Reserva de "${itemNome}" cancelada!`);
 }
 
 // Inicialização
