@@ -10,55 +10,58 @@ let reservas = {};
 
 // Funções para Google Sheets via Apps Script
 async function carregarDados() {
-    mostrarLoading();
-    
-    try {
-        const response = await fetch(WEB_APP_URL + '?action=get');
-        const result = await response.json();
+    mostrarLoading();
+    
+    try {
+        const response = await fetch(WEB_APP_URL + '?action=get');
+        const result = await response.json();
 		
-		// ADICIONE ESTES LOGS DE INSPEÇÃO:
-        console.log('Resposta bruta do Web App:', result); 
-        console.log('Status de Sucesso:', result.success); // SE ISSO FOR 'FALSE', ENCONTRAMOS O ERRO!
-        // FIM DOS LOGS
+        console.log('Resposta bruta do Web App:', result); 
+        console.log('Status de Sucesso:', result.success);
 
-        
-        if (result.success) {
-            // Processar dados da planilha
-            itens = [];
-            reservas = {};
-            
-            result.data.forEach((row, index) => { // Adicione 'index'
-                console.log(`Processando linha ${index + 1}:`, row); // Debug: Veja o dado bruto
+        if (result.success) {
+            itens = [];
+            reservas = {};
+            
+            result.data.forEach((row, index) => {
+                console.log(`Processando linha ${index + 1}:`, row);
                 
-                // ... restante do seu código
-                
-                if (itemNome && itemNome !== 'Item') {
-                    // ...
-                    // Tente isolar a falha em obterIcone se houver suspeita
-                    try {
-                        itens.push({
-                            nome: itemNome,
-                            icone: obterIcone(itemNome) // <-- Se falhar aqui, o forEach para.
-                        });
-                    } catch (e) {
-                        console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
-                        // Você pode querer continuar o forEach, ou forçar um break se for crítico.
-                    }
-                    // ...
+                // --- LINHAS FALTANTES QUE DEVEM SER INSERIDAS NOVAMENTE ---
+                if (!Array.isArray(row) || row.length === 0) {
+                    return; // Pula linhas nulas/vazias
                 }
-            });
-            
-            atualizarLista();
-        } else {
-            throw new Error('Erro ao carregar dados da planilha');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        // Fallback: carregar lista padrão se a planilha falhar
-        carregarListaPadrao();
-    } finally {
-        esconderLoading();
-    }
+                const itemNome = row[0]; // Coluna A - Item (Declarado e inicializado!)
+                const reserva = row[1];  // Coluna B - Reserva (Declarado e inicializado!)
+                // ------------------------------------------------------------
+                
+                if (itemNome && itemNome !== 'Item') {
+                    // ... (resto do seu código)
+                    // Aqui itemNome está corretamente definido
+                    try {
+                        itens.push({
+                            nome: itemNome,
+                            icone: obterIcone(itemNome)
+                        });
+                    } catch (e) {
+                        console.error(`Falha ao obter ícone para item: ${itemNome} na linha ${index + 1}`, e);
+                    }
+                    
+                    if (reserva && reserva !== 'Reserva') { // Usa a variável 'reserva'
+                        reservas[itemNome] = reserva;
+                    }
+                }
+            });
+            
+            atualizarLista();
+        } else {
+            throw new Error('Erro ao carregar dados da planilha');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        carregarListaPadrao();
+    } finally {
+        esconderLoading();
+    }
 }
 
 function carregarListaPadrao() {
