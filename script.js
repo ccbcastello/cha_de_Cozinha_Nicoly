@@ -111,11 +111,17 @@ function carregarListaPadrao() {
 }
 
 function reservarItem(itemNome, nomePessoa) {
+    // Criar um iframe oculto para enviar o formulário
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'reservationFrame';
+    document.body.appendChild(iframe);
+    
     // Criar um formulário para enviar os dados
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = WEB_APP_URL;
-    form.target = '_blank'; // Abrir em nova aba para evitar recarregar a página
+    form.target = iframe.name;
     
     // Adicionar campos ocultos
     const actionField = document.createElement('input');
@@ -154,15 +160,21 @@ function reservarItem(itemNome, nomePessoa) {
     // Recarregar a página após um pequeno delay
     setTimeout(() => {
         window.location.reload();
-    }, 2000);
+    }, 3000);
 }
 
 function cancelarReservaItem(itemNome) {
+    // Criar um iframe oculto para enviar o formulário
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'cancelFrame';
+    document.body.appendChild(iframe);
+    
     // Criar um formulário para enviar os dados
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = WEB_APP_URL;
-    form.target = '_blank'; // Abrir em nova aba para evitar recarregar a página
+    form.target = iframe.name;
     
     // Adicionar campos ocultos
     const actionField = document.createElement('input');
@@ -195,7 +207,7 @@ function cancelarReservaItem(itemNome) {
     // Recarregar a página após um pequeno delay
     setTimeout(() => {
         window.location.reload();
-    }, 2000);
+    }, 3000);
 }
 
 function obterIcone(itemNome) {
@@ -314,7 +326,7 @@ function reservar(itemNome, index) {
     reservarItem(itemNome, nome);
     
     // Mostrar mensagem de sucesso
-    alert(`"${itemNome}" reservado com sucesso para ${nome}!`);
+    alert(`"${itemNome}" reservado com sucesso para ${nome}!\n\nA página será recarregada em instantes...`);
 }
 
 function cancelarReserva(itemNome) {
@@ -332,7 +344,7 @@ function cancelarReserva(itemNome) {
     cancelarReservaItem(itemNome);
     
     // Mostrar mensagem de sucesso
-    alert(`Reserva de "${itemNome}" cancelada!`);
+    alert(`Reserva de "${itemNome}" cancelada!\n\nA página será recarregada em instantes...`);
 }
 
 // Inicialização
